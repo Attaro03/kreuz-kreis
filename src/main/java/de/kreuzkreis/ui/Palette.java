@@ -7,6 +7,8 @@ import de.kreuzkreis.Game.Player;
 /**
  * Farbtokens des Hum-Materials aus dem Hallmark-Theme-Katalog.
  * Die Werte sind die sRGB-Entsprechungen der dortigen OKLCH-Tokens.
+ * Einige Rollen der vollstaendigen Palette sind fuer spaetere Flaechen
+ * reserviert und werden auf dieser Seite noch nicht benutzt.
  */
 public final class Palette {
 

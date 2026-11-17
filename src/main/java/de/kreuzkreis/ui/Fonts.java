@@ -52,10 +52,4 @@ public final class Fonts {
         return semibold.deriveFont(size)
                 .deriveFont(Map.of(TextAttribute.TRACKING, -0.02f));
     }
-
-    public static Font displayTight(float size) {
-        load();
-        return semibold.deriveFont(size)
-                .deriveFont(Map.of(TextAttribute.TRACKING, -0.035f));
-    }
 }

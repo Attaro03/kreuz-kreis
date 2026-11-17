@@ -29,7 +29,7 @@ public final class SidePanel extends JPanel {
     private static final String RULE_ONE =
             "Wer drei eigene Zeichen direkt nebeneinander setzt – waagerecht, senkrecht oder diagonal – verliert sofort.";
     private static final String RULE_TWO =
-            "Sind alle 16 Felder belegt, endet die Partie unentschieden.";
+            "Sind alle 16 Felder belegt, ohne dass jemand drei in einer Reihe hat, endet die Partie unentschieden.";
 
     private final Game game;
     private final PaperButton resetButton;

@@ -27,6 +27,7 @@ public final class GameTest {
         run("Volles Feld ohne Verlustreihe ist unentschieden", GameTest::fullBoardWithoutTripleIsDraw);
         run("Der letzte Zug kann zwei Reihen schliessen und verliert", GameTest::lastMoveCanCompleteTwoTriples);
         run("Eine Luecke verhindert eine Verlustreihe", GameTest::gapInRowDoesNotLose);
+        run("Eine Luecke in einer Viererzeile schliesst zwei Reihen", GameTest::gapInLineCompletesTwoTriples);
         run("Neustart leert das Brett und setzt Kreuz an den Zug", GameTest::resetClearsFinishedGame);
 
         System.out.println();
@@ -217,6 +218,26 @@ public final class GameTest {
         assertEquals(5, game.getMoveCount(), "Zugzahl");
         assertTrue(game.getLosingTriples().isEmpty(), "X X O X ist keine Verlustreihe");
         assertPlayer(Player.KREIS, game.getCurrentPlayer(), "Kreis ist am Zug");
+    }
+
+    private static void gapInLineCompletesTwoTriples() {
+        Game game = new Game();
+        playOk(game, 0, 0);
+        playOk(game, 1, 0);
+        playOk(game, 0, 1);
+        playOk(game, 1, 1);
+        playOk(game, 0, 3);
+        playOk(game, 2, 0);
+        assertState(State.RUNNING, game);
+
+        playOk(game, 0, 2);
+
+        assertState(State.KREUZ_LOST, game);
+        assertEquals(2, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
+        assertTriple(game.getLosingTriples().get(0),
+                new Game.Cell(0, 0), new Game.Cell(0, 1), new Game.Cell(0, 2));
+        assertTriple(game.getLosingTriples().get(1),
+                new Game.Cell(0, 1), new Game.Cell(0, 2), new Game.Cell(0, 3));
     }
 
     private static void resetClearsFinishedGame() {

@@ -16,9 +16,15 @@ Voraussetzung: **JDK 17 oder neuer**.
 - `test.bat` – führt die Modell- und Oberflächentests aus.
 - `preview.bat` – schreibt die Vorschaubilder nach `docs/`.
 
+Vor einem Neubau das laufende Spiel schließen: Windows sperrt die geöffnete
+`KreuzKreis.jar`. Der Build meldet das und lässt die alte Datei unangetastet.
+Wenn beim Start etwas schiefgeht, `java -jar KreuzKreis.jar` im Terminal
+ausführen; dann erscheint die Fehlermeldung.
+
 Unter macOS oder Linux funktioniert der Build auch von Hand:
 
 ```bash
+rm -rf out
 mkdir -p out
 find src/main/java -name '*.java' > sources.txt
 javac --release 17 -encoding UTF-8 -d out @sources.txt

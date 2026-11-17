@@ -98,6 +98,10 @@ public final class BoardPanel extends JPanel {
                     showFocus = false;
                     focusRow = cell.row();
                     focusCol = cell.col();
+                    if (!game.isFree(cell.row(), cell.col())) {
+                        repaint();
+                        return;
+                    }
                     attemptPlay(cell);
                 }
             }
@@ -108,8 +112,9 @@ public final class BoardPanel extends JPanel {
         addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent event) {
-                // Der Fokusring erscheint erst bei der Tastaturbedienung, nicht
-                // schon nach einem Mausklick.
+                // Tab und andere Fokus-Traversierung zeigen den Ring sofort;
+                // ein Mausklick soll keinen Ring hinterlassen.
+                showFocus = isTraversal(event.getCause());
                 repaint();
             }
 
@@ -133,6 +138,14 @@ public final class BoardPanel extends JPanel {
     }
 
     /**
+     * Sichtbarkeit des Tastaturfokus. Wird auch von der Oberflaechenpruefung
+     * genutzt, damit der Fokusring nicht unbemerkt verschwinden kann.
+     */
+    public boolean isFocusIndicatorVisible() {
+        return showFocus;
+    }
+
+    /**
      * Mittelpunkt einer Zelle in Komponentenkoordinaten. Wird von der
      * Oberflaechenpruefung und spaeteren Automatisierungen genutzt.
      */
@@ -153,7 +166,14 @@ public final class BoardPanel extends JPanel {
         bind("DOWN", () -> moveFocus(1, 0));
         bind("ENTER", this::activateFocus);
         bind("SPACE", this::activateFocus);
-        bind("NUMPADENTER", this::activateFocus);
+    }
+
+    private static boolean isTraversal(FocusEvent.Cause cause) {
+        return switch (cause) {
+            case TRAVERSAL, TRAVERSAL_UP, TRAVERSAL_DOWN,
+                 TRAVERSAL_FORWARD, TRAVERSAL_BACKWARD, ROLLBACK -> true;
+            default -> false;
+        };
     }
 
     private void bind(String keyStroke, Runnable action) {
@@ -188,6 +208,7 @@ public final class BoardPanel extends JPanel {
 
     private void attemptPlay(Cell cell) {
         if (!game.isFree(cell.row(), cell.col())) {
+            repaint();
             return;
         }
         if (game.play(cell.row(), cell.col())) {

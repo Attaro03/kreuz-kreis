@@ -4,9 +4,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import de.kreuzkreis.Game.Player;
@@ -40,6 +44,10 @@ public final class UiTest {
             run("Der Knopf startet eine neue Runde", UiTest::resetButtonStartsNewRound);
             run("Pfeiltasten und Enter setzen ein Zeichen", UiTest::keyboardPlacesSymbol);
             run("Der Knopf heisst nach dem Verlust Nochmal spielen", UiTest::buttonTextAfterLoss);
+            run("Tab-Fokus zeigt den Fokusring", UiTest::focusRingOnTraversal);
+            run("Klick auf belegtes Feld loescht den Fokusring", UiTest::occupiedClickClearsFocusRing);
+            run("Die Tastaturbelegung ist installiert", UiTest::keyBindingsInstalled);
+            run("Kompakte Groesse trifft alle 16 Felder", UiTest::compactHitTesting);
         });
 
         System.out.println();
@@ -135,9 +143,73 @@ public final class UiTest {
                 "Knopftext nach dem Verlust");
     }
 
+    private static void focusRingOnTraversal() {
+        AppPanel panel = panel(new Game());
+        BoardPanel board = panel.getBoardPanel();
+        assertFalse(board.isFocusIndicatorVisible(), "Start ohne Fokusring");
+
+        fireFocus(board, FocusEvent.FOCUS_GAINED, FocusEvent.Cause.TRAVERSAL);
+        assertTrue(board.isFocusIndicatorVisible(), "Tab-Traversierung muss den Ring zeigen");
+
+        fireFocus(board, FocusEvent.FOCUS_GAINED, FocusEvent.Cause.MOUSE_EVENT);
+        assertFalse(board.isFocusIndicatorVisible(), "Mausklick darf keinen Ring zeigen");
+
+        fireFocus(board, FocusEvent.FOCUS_LOST, FocusEvent.Cause.UNKNOWN);
+        assertFalse(board.isFocusIndicatorVisible(), "Fokusverlust muss den Ring verstecken");
+    }
+
+    private static void occupiedClickClearsFocusRing() {
+        AppPanel panel = panel(new Game());
+        BoardPanel board = panel.getBoardPanel();
+        click(board, 0, 0);
+        board.getActionMap().get("board-RIGHT")
+                .actionPerformed(new ActionEvent(board, ActionEvent.ACTION_PERFORMED, "right"));
+        assertTrue(board.isFocusIndicatorVisible(), "Nach der Pfeiltaste ist der Ring sichtbar");
+
+        click(board, 0, 0);
+        assertFalse(board.isFocusIndicatorVisible(), "Belegter Klick muss den Ring loeschen");
+    }
+
+    private static void keyBindingsInstalled() {
+        BoardPanel board = panel(new Game()).getBoardPanel();
+        for (String key : new String[]{"LEFT", "RIGHT", "UP", "DOWN", "ENTER", "SPACE"}) {
+            Object binding = board.getInputMap(JComponent.WHEN_FOCUSED)
+                    .get(KeyStroke.getKeyStroke(key));
+            assertTrue(binding != null, "Tastenbelegung fehlt: " + key);
+        }
+    }
+
+    private static void compactHitTesting() {
+        for (int row = 0; row < Game.SIZE; row++) {
+            for (int col = 0; col < Game.SIZE; col++) {
+                AppPanel panel = panel(new Game(), 1000, 680);
+                click(panel.getBoardPanel(), row, col);
+                assertEquals(1, panel.getGame().getMoveCount(),
+                        "Zugzahl bei " + row + "/" + col);
+                assertPlayer(Player.KREUZ, panel.getGame().playerAt(row, col),
+                        "Kreuz auf " + row + "/" + col);
+            }
+        }
+    }
+
+    private static void fireFocus(BoardPanel board, int id, FocusEvent.Cause cause) {
+        FocusEvent event = new FocusEvent(board, id, false, null, cause);
+        for (FocusListener listener : board.getFocusListeners()) {
+            if (id == FocusEvent.FOCUS_GAINED) {
+                listener.focusGained(event);
+            } else {
+                listener.focusLost(event);
+            }
+        }
+    }
+
     private static AppPanel panel(Game game) {
+        return panel(game, WIDTH, HEIGHT);
+    }
+
+    private static AppPanel panel(Game game, int width, int height) {
         AppPanel panel = new AppPanel(game);
-        panel.setSize(WIDTH, HEIGHT);
+        panel.setSize(width, height);
         layout(panel);
         return panel;
     }
@@ -192,6 +264,12 @@ public final class UiTest {
 
     private static void assertTrue(boolean condition, String message) {
         if (!condition) {
+            throw new AssertionError(message);
+        }
+    }
+
+    private static void assertFalse(boolean condition, String message) {
+        if (condition) {
             throw new AssertionError(message);
         }
     }
