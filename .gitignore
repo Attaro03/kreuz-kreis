@@ -1,5 +1,6 @@
 out/
 out-test/
+out-lint/
 *.class
 *.jar
 sources.txt
