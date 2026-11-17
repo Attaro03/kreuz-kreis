@@ -1,5 +1,7 @@
 package de.kreuzkreis;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,6 +61,8 @@ public final class Game {
             return List.of(first, second, third);
         }
     }
+
+    private static final int[][] DIRECTIONS = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
 
     private final Player[][] board = new Player[SIZE][SIZE];
     private Player currentPlayer = Player.KREUZ;
@@ -123,7 +127,7 @@ public final class Game {
 
     public void reset() {
         for (int row = 0; row < SIZE; row++) {
-            java.util.Arrays.fill(board[row], null);
+            Arrays.fill(board[row], null);
         }
         currentPlayer = Player.KREUZ;
         state = State.RUNNING;
@@ -132,10 +136,9 @@ public final class Game {
     }
 
     private List<Triple> findTriplesThrough(int row, int col, Player player) {
-        int[][] directions = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
-        List<Triple> triples = new java.util.ArrayList<>();
+        List<Triple> triples = new ArrayList<>();
 
-        for (int[] direction : directions) {
+        for (int[] direction : DIRECTIONS) {
             int dr = direction[0];
             int dc = direction[1];
             for (int offset = -2; offset <= 0; offset++) {
