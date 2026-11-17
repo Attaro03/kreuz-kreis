@@ -104,31 +104,16 @@ public final class Game {
         board[row][col] = mover;
         moveCount++;
 
-        List<Triple> triples = new java.util.ArrayList<>();
-        for (int start = Math.max(0, col - 2); start <= Math.min(col, SIZE - 3); start++) {
-            if (board[row][start] == mover
-                    && board[row][start + 1] == mover
-                    && board[row][start + 2] == mover) {
-                triples.add(new Triple(
-                        new Cell(row, start),
-                        new Cell(row, start + 1),
-                        new Cell(row, start + 2)));
-            }
-        }
-        for (int start = Math.max(0, row - 2); start <= Math.min(row, SIZE - 3); start++) {
-            if (board[start][col] == mover
-                    && board[start + 1][col] == mover
-                    && board[start + 2][col] == mover) {
-                triples.add(new Triple(
-                        new Cell(start, col),
-                        new Cell(start + 1, col),
-                        new Cell(start + 2, col)));
-            }
-        }
+        List<Triple> triples = findTriplesThrough(row, col, mover);
 
         if (!triples.isEmpty()) {
             losingTriples = List.copyOf(triples);
             state = mover == Player.KREUZ ? State.KREUZ_LOST : State.KREIS_LOST;
+            return true;
+        }
+
+        if (moveCount == SIZE * SIZE) {
+            state = State.DRAW;
             return true;
         }
 
@@ -144,6 +129,34 @@ public final class Game {
         state = State.RUNNING;
         losingTriples = List.of();
         moveCount = 0;
+    }
+
+    private List<Triple> findTriplesThrough(int row, int col, Player player) {
+        int[][] directions = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
+        List<Triple> triples = new java.util.ArrayList<>();
+
+        for (int[] direction : directions) {
+            int dr = direction[0];
+            int dc = direction[1];
+            for (int offset = -2; offset <= 0; offset++) {
+                int startRow = row + offset * dr;
+                int startCol = col + offset * dc;
+                int endRow = startRow + 2 * dr;
+                int endCol = startCol + 2 * dc;
+                if (!isInside(startRow, startCol) || !isInside(endRow, endCol)) {
+                    continue;
+                }
+                if (board[startRow][startCol] == player
+                        && board[startRow + dr][startCol + dc] == player
+                        && board[endRow][endCol] == player) {
+                    triples.add(new Triple(
+                            new Cell(startRow, startCol),
+                            new Cell(startRow + dr, startCol + dc),
+                            new Cell(endRow, endCol)));
+                }
+            }
+        }
+        return triples;
     }
 
     private static boolean isInside(int row, int col) {

@@ -22,6 +22,9 @@ public final class GameTest {
         run("Felder ausserhalb des Bretts werden abgelehnt", GameTest::outOfBoundsRejected);
         run("Drei waagerecht nebeneinander: der Setzende verliert", GameTest::horizontalTripleLoses);
         run("Drei senkrecht nebeneinander: der Setzende verliert", GameTest::verticalTripleLoses);
+        run("Drei diagonal nach rechts unten: der Setzende verliert", GameTest::diagonalDownRightLoses);
+        run("Drei diagonal nach links unten: der Setzende verliert", GameTest::diagonalDownLeftLoses);
+        run("Volles Feld ohne Verlustreihe ist unentschieden", GameTest::fullBoardWithoutTripleIsDraw);
 
         System.out.println();
         if (failed > 0) {
@@ -111,6 +114,61 @@ public final class GameTest {
         assertEquals(1, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
         assertTriple(game.getLosingTriples().get(0),
                 new Game.Cell(0, 0), new Game.Cell(1, 0), new Game.Cell(2, 0));
+    }
+
+    private static void diagonalDownRightLoses() {
+        Game game = new Game();
+        playOk(game, 0, 1);
+        playOk(game, 3, 0);
+        playOk(game, 1, 2);
+        playOk(game, 3, 1);
+        playOk(game, 2, 3);
+
+        assertState(State.KREUZ_LOST, game);
+        assertEquals(1, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
+        assertTriple(game.getLosingTriples().get(0),
+                new Game.Cell(0, 1), new Game.Cell(1, 2), new Game.Cell(2, 3));
+    }
+
+    private static void diagonalDownLeftLoses() {
+        Game game = new Game();
+        playOk(game, 0, 3);
+        playOk(game, 0, 0);
+        playOk(game, 1, 2);
+        playOk(game, 1, 0);
+        playOk(game, 2, 1);
+
+        assertState(State.KREUZ_LOST, game);
+        assertEquals(1, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
+        assertTriple(game.getLosingTriples().get(0),
+                new Game.Cell(0, 3), new Game.Cell(1, 2), new Game.Cell(2, 1));
+    }
+
+    private static void fullBoardWithoutTripleIsDraw() {
+        Game game = new Game();
+        int[][] kreuzMoves = {
+                {0, 1}, {0, 3}, {1, 0}, {1, 1},
+                {2, 2}, {2, 3}, {3, 0}, {3, 1}
+        };
+        int[][] kreisMoves = {
+                {0, 0}, {0, 2}, {1, 2}, {1, 3},
+                {2, 0}, {2, 1}, {3, 2}, {3, 3}
+        };
+
+        for (int i = 0; i < kreuzMoves.length; i++) {
+            playOk(game, kreuzMoves[i][0], kreuzMoves[i][1]);
+            playOk(game, kreisMoves[i][0], kreisMoves[i][1]);
+        }
+
+        assertState(State.DRAW, game);
+        assertEquals(16, game.getMoveCount(), "Zugzahl");
+        assertTrue(game.getLosingTriples().isEmpty(), "Es darf keine Verlustreihe geben");
+        for (int row = 0; row < Game.SIZE; row++) {
+            for (int col = 0; col < Game.SIZE; col++) {
+                assertFalse(game.isFree(row, col), "Feld " + row + "/" + col + " muss belegt sein");
+            }
+        }
+        assertFalse(game.play(0, 0), "Nach dem Unentschieden darf nicht weitergespielt werden");
     }
 
     private static void assertTriple(Game.Triple triple, Game.Cell... expected) {
