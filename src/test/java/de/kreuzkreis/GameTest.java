@@ -20,6 +20,7 @@ public final class GameTest {
         run("Spieler wechseln sich ab", GameTest::playersAlternate);
         run("Belegtes Feld wird abgelehnt", GameTest::occupiedCellRejected);
         run("Felder ausserhalb des Bretts werden abgelehnt", GameTest::outOfBoundsRejected);
+        run("Drei waagerecht nebeneinander: der Setzende verliert", GameTest::horizontalTripleLoses);
 
         System.out.println();
         if (failed > 0) {
@@ -78,6 +79,30 @@ public final class GameTest {
         assertFalse(game.play(0, Game.SIZE), "Spalte ausserhalb muss abgelehnt werden");
         assertEquals(0, game.getMoveCount(), "Kein Zug darf gezaehlt werden");
         assertPlayer(Player.KREUZ, game.getCurrentPlayer(), "Kreuz bleibt am Zug");
+    }
+
+    private static void horizontalTripleLoses() {
+        Game game = new Game();
+        playOk(game, 0, 0);
+        playOk(game, 1, 1);
+        playOk(game, 0, 1);
+        playOk(game, 1, 2);
+        playOk(game, 0, 2);
+
+        assertState(State.KREUZ_LOST, game);
+        assertEquals(5, game.getMoveCount(), "Zugzahl");
+        assertPlayer(Player.KREUZ, game.playerAt(0, 2), "Das dritte Kreuz bleibt stehen");
+        assertEquals(1, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
+        assertTriple(game.getLosingTriples().get(0),
+                new Game.Cell(0, 0), new Game.Cell(0, 1), new Game.Cell(0, 2));
+        assertFalse(game.play(2, 2), "Nach dem Verlust darf nicht weitergespielt werden");
+    }
+
+    private static void assertTriple(Game.Triple triple, Game.Cell... expected) {
+        List<Game.Cell> actualCells = triple.cells();
+        if (!actualCells.equals(List.of(expected))) {
+            throw new AssertionError("Erwartete Reihe " + List.of(expected) + ", war " + actualCells);
+        }
     }
 
     private static void playOk(Game game, int row, int col) {

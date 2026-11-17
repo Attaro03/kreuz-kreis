@@ -100,9 +100,29 @@ public final class Game {
             return false;
         }
 
-        board[row][col] = currentPlayer;
+        Player mover = currentPlayer;
+        board[row][col] = mover;
         moveCount++;
-        currentPlayer = currentPlayer.other();
+
+        List<Triple> triples = new java.util.ArrayList<>();
+        for (int start = Math.max(0, col - 2); start <= Math.min(col, SIZE - 3); start++) {
+            if (board[row][start] == mover
+                    && board[row][start + 1] == mover
+                    && board[row][start + 2] == mover) {
+                triples.add(new Triple(
+                        new Cell(row, start),
+                        new Cell(row, start + 1),
+                        new Cell(row, start + 2)));
+            }
+        }
+
+        if (!triples.isEmpty()) {
+            losingTriples = List.copyOf(triples);
+            state = mover == Player.KREUZ ? State.KREUZ_LOST : State.KREIS_LOST;
+            return true;
+        }
+
+        currentPlayer = mover.other();
         return true;
     }
 
