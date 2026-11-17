@@ -115,6 +115,16 @@ public final class Game {
                         new Cell(row, start + 2)));
             }
         }
+        for (int start = Math.max(0, row - 2); start <= Math.min(row, SIZE - 3); start++) {
+            if (board[start][col] == mover
+                    && board[start + 1][col] == mover
+                    && board[start + 2][col] == mover) {
+                triples.add(new Triple(
+                        new Cell(start, col),
+                        new Cell(start + 1, col),
+                        new Cell(start + 2, col)));
+            }
+        }
 
         if (!triples.isEmpty()) {
             losingTriples = List.copyOf(triples);

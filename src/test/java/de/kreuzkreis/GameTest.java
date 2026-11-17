@@ -21,6 +21,7 @@ public final class GameTest {
         run("Belegtes Feld wird abgelehnt", GameTest::occupiedCellRejected);
         run("Felder ausserhalb des Bretts werden abgelehnt", GameTest::outOfBoundsRejected);
         run("Drei waagerecht nebeneinander: der Setzende verliert", GameTest::horizontalTripleLoses);
+        run("Drei senkrecht nebeneinander: der Setzende verliert", GameTest::verticalTripleLoses);
 
         System.out.println();
         if (failed > 0) {
@@ -96,6 +97,20 @@ public final class GameTest {
         assertTriple(game.getLosingTriples().get(0),
                 new Game.Cell(0, 0), new Game.Cell(0, 1), new Game.Cell(0, 2));
         assertFalse(game.play(2, 2), "Nach dem Verlust darf nicht weitergespielt werden");
+    }
+
+    private static void verticalTripleLoses() {
+        Game game = new Game();
+        playOk(game, 0, 0);
+        playOk(game, 1, 1);
+        playOk(game, 1, 0);
+        playOk(game, 2, 2);
+        playOk(game, 2, 0);
+
+        assertState(State.KREUZ_LOST, game);
+        assertEquals(1, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
+        assertTriple(game.getLosingTriples().get(0),
+                new Game.Cell(0, 0), new Game.Cell(1, 0), new Game.Cell(2, 0));
     }
 
     private static void assertTriple(Game.Triple triple, Game.Cell... expected) {
