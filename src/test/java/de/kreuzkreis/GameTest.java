@@ -25,6 +25,9 @@ public final class GameTest {
         run("Drei diagonal nach rechts unten: der Setzende verliert", GameTest::diagonalDownRightLoses);
         run("Drei diagonal nach links unten: der Setzende verliert", GameTest::diagonalDownLeftLoses);
         run("Volles Feld ohne Verlustreihe ist unentschieden", GameTest::fullBoardWithoutTripleIsDraw);
+        run("Der letzte Zug kann zwei Reihen schliessen und verliert", GameTest::lastMoveCanCompleteTwoTriples);
+        run("Eine Luecke verhindert eine Verlustreihe", GameTest::gapInRowDoesNotLose);
+        run("Neustart leert das Brett und setzt Kreuz an den Zug", GameTest::resetClearsFinishedGame);
 
         System.out.println();
         if (failed > 0) {
@@ -169,6 +172,73 @@ public final class GameTest {
             }
         }
         assertFalse(game.play(0, 0), "Nach dem Unentschieden darf nicht weitergespielt werden");
+    }
+
+    private static void lastMoveCanCompleteTwoTriples() {
+        Game game = new Game();
+        int[][] kreuzMoves = {
+                {0, 0}, {0, 2}, {1, 0}, {1, 1},
+                {1, 3}, {2, 1}, {2, 3}, {3, 0}
+        };
+        int[][] kreisMoves = {
+                {0, 1}, {0, 3}, {1, 2}, {2, 0},
+                {2, 2}, {3, 1}, {3, 3}
+        };
+
+        for (int i = 0; i < kreisMoves.length; i++) {
+            playOk(game, kreuzMoves[i][0], kreuzMoves[i][1]);
+            playOk(game, kreisMoves[i][0], kreisMoves[i][1]);
+        }
+        playOk(game, 3, 0);
+        assertState(State.RUNNING, game);
+        assertPlayer(Player.KREIS, game.getCurrentPlayer(), "Kreis ist vor dem letzten Zug am Zug");
+
+        playOk(game, 3, 2);
+
+        assertState(State.KREIS_LOST, game);
+        assertEquals(16, game.getMoveCount(), "Zugzahl");
+        assertEquals(2, game.getLosingTriples().size(), "Anzahl der Verlustreihen");
+        assertTriple(game.getLosingTriples().get(0),
+                new Game.Cell(3, 1), new Game.Cell(3, 2), new Game.Cell(3, 3));
+        assertTriple(game.getLosingTriples().get(1),
+                new Game.Cell(1, 2), new Game.Cell(2, 2), new Game.Cell(3, 2));
+        assertPlayer(Player.KREIS, game.getState().loser(), "Verlierer");
+    }
+
+    private static void gapInRowDoesNotLose() {
+        Game game = new Game();
+        playOk(game, 0, 0);
+        playOk(game, 0, 2);
+        playOk(game, 0, 1);
+        playOk(game, 1, 0);
+        playOk(game, 0, 3);
+
+        assertState(State.RUNNING, game);
+        assertEquals(5, game.getMoveCount(), "Zugzahl");
+        assertTrue(game.getLosingTriples().isEmpty(), "X X O X ist keine Verlustreihe");
+        assertPlayer(Player.KREIS, game.getCurrentPlayer(), "Kreis ist am Zug");
+    }
+
+    private static void resetClearsFinishedGame() {
+        Game game = new Game();
+        playOk(game, 0, 0);
+        playOk(game, 1, 1);
+        playOk(game, 0, 1);
+        playOk(game, 1, 2);
+        playOk(game, 0, 2);
+        assertState(State.KREUZ_LOST, game);
+
+        game.reset();
+
+        assertState(State.RUNNING, game);
+        assertPlayer(Player.KREUZ, game.getCurrentPlayer(), "Startspieler nach Neustart");
+        assertEquals(0, game.getMoveCount(), "Zugzahl nach Neustart");
+        assertTrue(game.getLosingTriples().isEmpty(), "Keine Verlustreihe nach Neustart");
+        for (int row = 0; row < Game.SIZE; row++) {
+            for (int col = 0; col < Game.SIZE; col++) {
+                assertTrue(game.isFree(row, col), "Feld " + row + "/" + col + " muss frei sein");
+            }
+        }
     }
 
     private static void assertTriple(Game.Triple triple, Game.Cell... expected) {
