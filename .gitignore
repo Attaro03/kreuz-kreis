@@ -1,0 +1,9 @@
+out/
+out-test/
+*.class
+*.jar
+sources.txt
+.hallmark/
+.idea/
+.vscode/
+*.iml
