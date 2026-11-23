@@ -16,26 +16,13 @@ if errorlevel 1 (
 if exist out rmdir /s /q out
 mkdir out
 
-dir /s /b src\main\java\*.java > sources.txt
-javac --release 17 -encoding UTF-8 -d out @sources.txt
+javac --release 17 -encoding UTF-8 -sourcepath src\main\java -d out src\main\java\de\kreuzkreis\Main.java
 if errorlevel 1 goto :fail
-del sources.txt
 
-if exist src\main\resources (
-    xcopy /e /i /y "src\main\resources\*" "out\" >nul
-    if errorlevel 1 (
-        echo Die Ressourcen konnten nicht kopiert werden.
-        goto :fail
-    )
-)
-if not exist "out\fonts\Chillax-Medium.ttf" (
-    echo Die Schriftdateien fehlen im Build.
-    goto :fail
-)
-if not exist "out\fonts\Chillax-Semibold.ttf" (
-    echo Die Schriftdateien fehlen im Build.
-    goto :fail
-)
+xcopy /e /i /y "src\main\resources\*" "out\" >nul
+if errorlevel 1 goto :fail
+if not exist "out\fonts\Chillax-Medium.ttf" goto :fail
+if not exist "out\fonts\Chillax-Semibold.ttf" goto :fail
 
 if exist KreuzKreis.tmp.jar del /f /q KreuzKreis.tmp.jar >nul 2>nul
 jar --create --file KreuzKreis.tmp.jar --main-class de.kreuzkreis.Main -C out .
@@ -55,7 +42,6 @@ echo Build erfolgreich: KreuzKreis.jar
 exit /b 0
 
 :fail
-if exist sources.txt del sources.txt
 if exist KreuzKreis.tmp.jar del /f /q KreuzKreis.tmp.jar >nul 2>nul
 echo.
 echo Build fehlgeschlagen.

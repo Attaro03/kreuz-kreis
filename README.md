@@ -1,99 +1,38 @@
 # Kreuz & Kreis
 
-Ein 4×4-Spiel für zwei Spieler an einem Bildschirm. Wer drei eigene Zeichen
-direkt nebeneinander setzt – waagerecht, senkrecht oder diagonal – verliert
-sofort. Sind alle 16 Felder belegt, ohne dass jemand verliert, endet die Partie
-unentschieden.
+Ein lokales Spiel für zwei Personen an einem Bildschirm: Auf einem 4 × 4 großen Brett setzen Kreuz und Kreis abwechselnd ihre Zeichen. Wer drei eigene Zeichen unmittelbar waagerecht, senkrecht oder diagonal verbindet, verliert. Ist das Brett ohne Verlustreihe voll, endet die Runde unentschieden.
 
-![Kreuz & Kreis](docs/preview-loss.png)
+## Voraussetzungen
 
-## Starten
+Ein JDK ab Version 17 mit `java`, `javac` und `jar` im PATH sowie eine grafische Desktop-Umgebung. Weitere Bibliotheken sind nicht erforderlich.
 
-Voraussetzung: **JDK 17 oder neuer**.
+## Start unter Windows
 
-- `run.bat` – baut das Projekt und startet das Spiel.
-- `build.bat` – baut nur; danach startet `java -jar KreuzKreis.jar`.
-- `test.bat` – führt die Modell- und Oberflächentests aus.
-- `preview.bat` – schreibt die Vorschaubilder nach `docs/`.
+Im Projektordner `run.bat` ausführen. Das Skript baut und startet das Spiel. Alternativ `build.bat` ausführen und anschließend `java -jar KreuzKreis.jar` starten. Vor einem erneuten Build das Spiel schließen.
 
-Vor einem Neubau das laufende Spiel schließen: Windows sperrt die geöffnete
-`KreuzKreis.jar`. Der Build meldet das und lässt die alte Datei unangetastet.
-Wenn beim Start etwas schiefgeht, `java -jar KreuzKreis.jar` im Terminal
-ausführen; dann erscheint die Fehlermeldung.
+## Start unter Linux und macOS
 
-Unter macOS oder Linux funktioniert der Build auch von Hand:
-
-```bash
-rm -rf out
+```sh
 mkdir -p out
 find src/main/java -name '*.java' > sources.txt
 javac --release 17 -encoding UTF-8 -d out @sources.txt
-cp -r src/main/resources/* out/
+cp -R src/main/resources/. out/
 jar --create --file KreuzKreis.jar --main-class de.kreuzkreis.Main -C out .
 java -jar KreuzKreis.jar
 ```
 
 ## Bedienung
 
-- Freies Feld mit der Maus anklicken.
-- Tastatur: `Tab` zum Spielfeld, Pfeiltasten bewegen, `Enter` oder `Leertaste`
-  setzt das Zeichen. `Tab` führt weiter zum Knopf.
-- `Neue Runde` startet jederzeit neu; nach einer entschiedenen Partie heißt der
-  Knopf `Nochmal spielen`.
-- Ein Klick auf ein belegtes Feld ändert nichts. Nach dem Ende sind keine Züge
-  mehr möglich.
+Ein freies Feld anklicken oder mit Tab zum Spielfeld wechseln, mit den Pfeiltasten navigieren und mit Enter oder Leertaste setzen. „Neue Runde“ setzt das Spiel zurück.
 
-## Regeln
+## Tests
 
-- **Kreuz** beginnt, danach setzen die Spieler abwechselnd.
-- Es verliert, wer mit seinem Zug **drei eigene Zeichen in einer ununterbrochenen
-  Dreierfolge** hat. Das gilt für alle Zeilen, alle Spalten und alle Diagonalen
-  in beide Richtungen – auch für kürzere Diagonalen am Rand.
-- Ein volles Feld ohne solche Dreierfolge ist **unentschieden**.
-- Die Prüfung erfolgt nach jedem Zug sofort; der Zug, der die Dreierfolge
-  schließt, beendet die Partie. Ein volles Feld, dessen letzter Zug eine
-  Dreierfolge schließt, ist deshalb eine verlorene, keine unentschiedene Partie.
+Unter Windows `test.bat` ausführen. Das Skript baut das Projekt und führt Modell- und Swing-Tests aus; die Swing-Tests laufen ohne sichtbares Fenster.
 
-## Projekt
+## Projektstruktur
 
-```
-src/main/java/de/kreuzkreis/
-  Game.java              Spielmodell und Regeln
-  Main.java              Startpunkt
-  ui/
-    AppPanel.java        Gesamtseite
-    BoardPanel.java      Spielfeld, Maus- und Tastaturbedienung
-    SidePanel.java       Titel, Regel, Status, Neustart
-    PaperButton.java     Karton-Knopf
-    PaperShapes.java     Papierformen und Schatten
-    PaperTexture.java    Papierkorn
-    Palette.java         Farbtokens
-    Fonts.java           Chillax laden
-    AppIcon.java         Fenstersymbol
-src/test/java/de/kreuzkreis/
-  GameTest.java          Regeltests
-  UiTest.java            Klick-, Tastatur- und Neustarttests
-  Preview.java           Vorschauen ohne Fenster rendern
-src/main/resources/fonts/
-  Chillax-Medium.ttf
-  Chillax-Semibold.ttf
-docs/
-  preview-*.png
-```
-
-## Gestaltung
-
-Die Oberfläche folgt dem **Hum**-Material aus
-[Hallmark](https://github.com/Nutlope/hallmark), einem Design-Skill für
-Webseiten. Weil die Aufgabe Java verlangt, wurde das Material auf Swing
-übertragen: Creme-Papier mit Körnung, blau-schwarze Schrift, Karton-Knöpfe mit
-Unterkante, gerissene Papierkanten, ein hellblauer Papiermatte unter dem Brett,
-ein Pear-Highlighter über der Verlustreihe und ein Sticker als Ergebnis.
-
-Die Designentscheidungen und Farbtokens stehen in [DESIGN.md](DESIGN.md).
-
-## Schrift
-
-**Chillax** von Indian Type Foundry, bezogen über
-[Fontshare](https://www.fontshare.com/fonts/chillax). Nutzung nach der
-[Fontshare Free Font License](https://www.fontshare.com/licenses/itf-ffl).
+- `src/main/java/de/kreuzkreis/`: Startpunkt und Spielmodell
+- `src/main/java/de/kreuzkreis/ui/`: Swing-Oberfläche
+- `src/main/resources/fonts/`: Schriftdateien
+- `src/test/java/de/kreuzkreis/`: Modell- und Oberflächentests
+- `build.bat`, `run.bat`, `test.bat`: Windows-Build, Start und Tests

@@ -4,7 +4,8 @@ out-lint/
 *.class
 *.jar
 sources.txt
-.hallmark/
 .idea/
 .vscode/
 *.iml
+.env
+.env.*
